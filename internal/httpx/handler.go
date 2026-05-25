@@ -177,9 +177,13 @@ func (h *Handler) Search(c *gin.Context) {
 		return
 	}
 
+	if books == nil {
+		books = []book.Book{}
+	}
+
 	RespondJSON(c, Response{
 		Success: true,
-		Message: "Book Found!!",
+		Message: "Successfully",
 		Code:    200,
 		Data: gin.H{
 			"books": books,
