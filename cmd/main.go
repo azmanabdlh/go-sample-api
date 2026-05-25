@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -31,11 +32,17 @@ func main() {
 	})
 
 	r.POST("/echo", func(c *gin.Context) {
-		var body map[string]any
+		// var body map[string]interface{}
 
-		_ = c.ShouldBindJSON(&body)
+		body, err := io.ReadAll(c.Request.Body)
+		if err != nil {
+			http.Error(c.Writer, "error", 500)
+		}
 
-		c.JSON(200, body)
+		c.Writer.Header().Set("content-type", "application/json")
+		c.Writer.WriteHeader(200)
+		c.Writer.Write(body)
+
 	})
 
 	repo := repository.NewMemoryStore()
