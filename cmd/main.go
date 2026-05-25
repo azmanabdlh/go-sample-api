@@ -1,0 +1,115 @@
+package main
+
+import (
+	"context"
+	"errors"
+	"log"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
+
+	"github.com/azmanabdlh/go-sample-api/internal/book"
+	"github.com/azmanabdlh/go-sample-api/internal/httpx"
+	"github.com/azmanabdlh/go-sample-api/internal/provider"
+	"github.com/azmanabdlh/go-sample-api/internal/repository"
+	"github.com/gin-gonic/gin"
+)
+
+func main() {
+	r := gin.New()
+
+	r.Use(gin.Logger())
+
+	r.GET("/ping", func(c *gin.Context) {
+		httpx.RespondJSON(c, httpx.Response{
+			Message: "Pong",
+			Success: true,
+			Code:    200,
+		})
+	})
+
+	r.POST("/echo", func(c *gin.Context) {
+		var body map[string]any
+
+		_ = c.ShouldBindJSON(&body)
+
+		httpx.RespondJSON(c, httpx.Response{
+			Message: "Echo",
+			Success: true,
+			Code:    200,
+			Data:    body,
+		})
+	})
+
+	repo := repository.NewMemoryStore()
+	service := book.NewService(repo)
+	handler := httpx.NewHandler(service)
+
+	api := r.Group("/api")
+	api.Use(
+		httpx.RequiredAuthentication(
+			provider.NewMemoryTokenProvider(),
+			// or json-web-token provider
+			// provider.NewJsonWebTokenProvider(),
+		),
+	)
+	{
+		api.POST("/books", handler.Create)
+		api.GET("/books", handler.Search)
+		api.GET("/books/:id", handler.FindByID)
+		api.PUT("/books/:id", handler.Update)
+		api.DELETE("/books/:id", handler.Delete)
+
+	}
+
+	server := &http.Server{
+		Addr:    ":8080",
+		Handler: r,
+
+		ReadTimeout:  10 * time.Second,
+		WriteTimeout: 10 * time.Second,
+		IdleTimeout:  60 * time.Second,
+	}
+
+	go func() {
+		log.Println("http server running at :8080")
+
+		err := server.ListenAndServe()
+
+		if err != nil &&
+			!errors.Is(err, http.ErrServerClosed) {
+			log.Fatalf("server error: %v", err)
+		}
+	}()
+
+	// wait OS signal
+	quit := make(chan os.Signal, 1)
+
+	signal.Notify(
+		quit,
+		syscall.SIGINT,
+		syscall.SIGTERM,
+	)
+
+	sig := <-quit
+
+	log.Printf("signal received: %v", sig)
+
+	// shutdown timeout context
+	ctx, cancel := context.WithTimeout(
+		context.Background(),
+		10*time.Second,
+	)
+
+	defer cancel()
+
+	// graceful shutdown
+	if err := server.Shutdown(ctx); err != nil {
+		log.Fatalf("shutdown failed: %v", err)
+	}
+
+	log.Println("server stopped gracefully")
+
+}

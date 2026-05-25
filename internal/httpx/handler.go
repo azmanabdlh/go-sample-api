@@ -1,0 +1,187 @@
+package httpx
+
+import (
+	"strconv"
+
+	"github.com/azmanabdlh/go-sample-api/internal/book"
+	"github.com/gin-gonic/gin"
+)
+
+type Handler struct {
+	service *book.Service
+}
+
+func NewHandler(service *book.Service) *Handler {
+	return &Handler{
+		service: service,
+	}
+}
+
+type CreateBookRequest struct {
+	Title  string `json:"title"`
+	Author string `json:"author"`
+}
+
+func (h *Handler) Create(c *gin.Context) {
+	var req CreateBookRequest
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		RespondJSON(c, Response{
+			Message: err.Error(),
+			Code:    500,
+		})
+
+		return
+	}
+
+	book, err := h.service.Create(
+		c.Request.Context(),
+		req.Title,
+		req.Author,
+	)
+
+	if err != nil {
+		RespondJSON(c, Response{
+			Message: err.Error(),
+			Code:    500,
+		})
+		return
+	}
+
+	RespondJSON(c, Response{
+		Success: true,
+		Message: "Book Created!!",
+		Code:    201,
+		Data:    book,
+	})
+}
+
+func (h *Handler) FindByID(c *gin.Context) {
+	id := c.Param("id")
+
+	book, err := h.service.FindByID(
+		c.Request.Context(),
+		id,
+	)
+
+	if err != nil {
+		RespondJSON(c, Response{
+			Message: err.Error(),
+			Code:    500,
+		})
+		return
+	}
+
+	RespondJSON(c, Response{
+		Success: true,
+		Message: "Book ok",
+		Code:    200,
+		Data:    book,
+	})
+}
+
+func (h *Handler) Update(c *gin.Context) {
+	id := c.Param("id")
+
+	var req CreateBookRequest
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		RespondJSON(c, Response{
+			Message: err.Error(),
+			Code:    500,
+		})
+		return
+	}
+
+	book, err := h.service.Update(
+		c.Request.Context(),
+		id,
+		req.Title,
+		req.Author,
+	)
+
+	if err != nil {
+		RespondJSON(c, Response{
+			Message: err.Error(),
+			Code:    500,
+		})
+		return
+	}
+
+	RespondJSON(c, Response{
+		Success: true,
+		Message: "Book Updated!",
+		Code:    200,
+		Data:    book,
+	})
+}
+
+func (h *Handler) Delete(c *gin.Context) {
+	id := c.Param("id")
+
+	err := h.service.Delete(
+		c.Request.Context(),
+		id,
+	)
+
+	if err != nil {
+		RespondJSON(c, Response{
+			Message: err.Error(),
+			Code:    500,
+		})
+		return
+	}
+
+	RespondJSON(c, Response{
+		Success: true,
+		Message: "Book Deleted",
+		Code:    200,
+	})
+}
+
+func (h *Handler) Search(c *gin.Context) {
+	query := c.Query("query")
+
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
+
+	books, total, err := h.service.Search(
+		c.Request.Context(),
+		query,
+		limit,
+		page,
+	)
+
+	if err != nil {
+		RespondJSON(c, Response{
+			Message: err.Error(),
+			Code:    500,
+		})
+		return
+	}
+
+	c.JSON(200, gin.H{
+		"books": books,
+		"meta": gin.H{
+			"page":  page,
+			"limit": limit,
+			"total": total,
+		},
+	},
+	)
+
+	return
+	RespondJSON(c, Response{
+		Success: true,
+		Message: "Book Found!!",
+		Code:    200,
+		Data: gin.H{
+			"books": books,
+			"meta": gin.H{
+				"page":  page,
+				"limit": limit,
+				"total": total,
+			},
+		},
+	})
+}
