@@ -35,11 +35,8 @@ func main() {
 
 		_ = c.ShouldBindJSON(&body)
 
-		httpx.RespondJSON(c, httpx.Response{
-			Message: "Echo",
-			Success: true,
-			Code:    200,
-			Data:    body,
+		c.JSON(200, gin.H{
+			"echo": body,
 		})
 	})
 
