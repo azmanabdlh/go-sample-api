@@ -2,7 +2,7 @@ package book
 
 import (
 	"context"
-	"errors"
+	"fmt"
 
 	"github.com/google/uuid"
 )
@@ -50,7 +50,7 @@ func (s *Service) Update(
 	}
 
 	if book == nil {
-		return nil, errors.New("book not found")
+		return nil, fmt.Errorf("error: %w", ErrBookNotFound)
 	}
 
 	book.Title = title
@@ -83,7 +83,7 @@ func (s *Service) FindByID(
 	}
 
 	if book == nil {
-		return nil, errors.New("book not found")
+		return nil, fmt.Errorf("error: %w", ErrBookNotFound)
 	}
 
 	return book, nil

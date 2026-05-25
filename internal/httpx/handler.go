@@ -1,6 +1,7 @@
 package httpx
 
 import (
+	"errors"
 	"strconv"
 
 	"github.com/azmanabdlh/go-sample-api/internal/book"
@@ -59,10 +60,18 @@ func (h *Handler) Create(c *gin.Context) {
 func (h *Handler) FindByID(c *gin.Context) {
 	id := c.Param("id")
 
-	book, err := h.service.FindByID(
+	data, err := h.service.FindByID(
 		c.Request.Context(),
 		id,
 	)
+
+	if errors.Is(err, book.ErrBookNotFound) {
+		RespondJSON(c, Response{
+			Message: err.Error(),
+			Code:    404,
+		})
+		return
+	}
 
 	if err != nil {
 		RespondJSON(c, Response{
@@ -76,7 +85,7 @@ func (h *Handler) FindByID(c *gin.Context) {
 		Success: true,
 		Message: "Book ok",
 		Code:    200,
-		Data:    book,
+		Data:    data,
 	})
 }
 
@@ -93,12 +102,20 @@ func (h *Handler) Update(c *gin.Context) {
 		return
 	}
 
-	book, err := h.service.Update(
+	data, err := h.service.Update(
 		c.Request.Context(),
 		id,
 		req.Title,
 		req.Author,
 	)
+
+	if errors.Is(err, book.ErrBookNotFound) {
+		RespondJSON(c, Response{
+			Message: err.Error(),
+			Code:    404,
+		})
+		return
+	}
 
 	if err != nil {
 		RespondJSON(c, Response{
@@ -112,7 +129,7 @@ func (h *Handler) Update(c *gin.Context) {
 		Success: true,
 		Message: "Book Updated!",
 		Code:    200,
-		Data:    book,
+		Data:    data,
 	})
 }
 
@@ -160,17 +177,6 @@ func (h *Handler) Search(c *gin.Context) {
 		return
 	}
 
-	c.JSON(200, gin.H{
-		"books": books,
-		"meta": gin.H{
-			"page":  page,
-			"limit": limit,
-			"total": total,
-		},
-	},
-	)
-
-	return
 	RespondJSON(c, Response{
 		Success: true,
 		Message: "Book Found!!",
