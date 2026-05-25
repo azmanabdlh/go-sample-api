@@ -20,12 +20,12 @@ func NewService(repo Repository) *Service {
 func (s *Service) Create(
 	ctx context.Context,
 	title string,
-	authorId string,
+	author string,
 ) (*Book, error) {
 	book := Book{
-		ID:       uuid.NewString(),
-		Title:    title,
-		AuthorID: authorId,
+		ID:     uuid.NewString(),
+		Title:  title,
+		Author: author,
 	}
 
 	err := s.repo.Create(ctx, book)
@@ -41,7 +41,7 @@ func (s *Service) Update(
 	ctx context.Context,
 	id string,
 	title string,
-	authorId string,
+	author string,
 ) (*Book, error) {
 	book, err := s.repo.FindByID(ctx, id)
 
@@ -54,7 +54,7 @@ func (s *Service) Update(
 	}
 
 	book.Title = title
-	book.AuthorID = authorId
+	book.Author = author
 
 	err = s.repo.Update(ctx, *book)
 

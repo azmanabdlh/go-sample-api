@@ -35,14 +35,14 @@ func main() {
 
 		_ = c.ShouldBindJSON(&body)
 
-		c.JSON(200, gin.H{
-			"echo": body,
-		})
+		c.JSON(200, body)
 	})
 
 	repo := repository.NewMemoryStore()
 	service := book.NewService(repo)
 	handler := httpx.NewHandler(service)
+
+	r.POST("/auth/token", handler.GenerateToken)
 
 	api := r.Group("/api")
 	api.Use(

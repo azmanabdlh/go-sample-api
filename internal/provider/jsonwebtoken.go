@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"errors"
+	"time"
 
 	"github.com/golang-jwt/jwt"
 )
@@ -33,4 +34,26 @@ func (j *JsonWebToken) ValidateToken(
 	}
 
 	return nil
+}
+
+func (j *JsonWebToken) GenerateToken(
+	userID string,
+) (string, error) {
+
+	now := time.Now()
+
+	claims := jwt.MapClaims{
+		"sub": userID,
+		"iat": now.Unix(),
+		"exp": now.Add(24 * time.Hour).Unix(),
+	}
+
+	token := jwt.NewWithClaims(
+		jwt.SigningMethodHS256,
+		claims,
+	)
+
+	return token.SignedString(
+		[]byte(j.secret),
+	)
 }

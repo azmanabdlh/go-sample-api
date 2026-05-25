@@ -5,17 +5,34 @@ import (
 	"strconv"
 
 	"github.com/azmanabdlh/go-sample-api/internal/book"
+	"github.com/azmanabdlh/go-sample-api/internal/provider"
 	"github.com/gin-gonic/gin"
 )
 
 type Handler struct {
 	service *book.Service
+	jwt     provider.JsonWebToken
+}
+
+type SearchFilter struct {
+	Title  string
+	Author string
+
+	Page  int
+	Limit int
+
+	Sort  string
+	Order string
 }
 
 func NewHandler(service *book.Service) *Handler {
 	return &Handler{
 		service: service,
 	}
+}
+
+type TokenRequest struct {
+	UserID string `json:"user_id"`
 }
 
 type CreateBookRequest struct {
@@ -157,10 +174,23 @@ func (h *Handler) Delete(c *gin.Context) {
 }
 
 func (h *Handler) Search(c *gin.Context) {
-	query := c.Query("query")
+	query := c.Query("author")
 
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
+	page, _ := strconv.Atoi(
+		c.DefaultQuery("page", "1"),
+	)
+
+	limit, _ := strconv.Atoi(
+		c.DefaultQuery("limit", "10"),
+	)
+
+	if page <= 0 {
+		page = 1
+	}
+
+	if limit <= 0 {
+		limit = 10
+	}
 
 	books, total, err := h.service.Search(
 		c.Request.Context(),
@@ -193,5 +223,45 @@ func (h *Handler) Search(c *gin.Context) {
 				"total": total,
 			},
 		},
+	})
+}
+
+func (h *Handler) GenerateToken(c *gin.Context) {
+	var req TokenRequest
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		RespondJSON(c, Response{
+			Message: "invalid body",
+			Code:    400,
+		})
+		return
+	}
+
+	if req.UserID == "" {
+		req.UserID = "user-1"
+	}
+
+	token, err := h.jwt.GenerateToken(
+		req.UserID,
+	)
+
+	if err != nil {
+		RespondJSON(c, Response{
+			Message: "failed generate token",
+			Code:    500,
+		})
+
+		return
+	}
+
+	RespondJSON(c, Response{
+		Success: true,
+		Message: "Token ok",
+		Data: gin.H{
+			"access_token": token,
+			"token_type":   "Bearer",
+			"user_id":      req.UserID,
+		},
+		Code: 200,
 	})
 }

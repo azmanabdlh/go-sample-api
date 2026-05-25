@@ -83,17 +83,24 @@ func (m *MemoryStore) Search(
 	limit int,
 	offset int,
 ) ([]book.Book, int, error) {
+
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 
 	var result []book.Book
 
+	q := strings.ToLower(query)
+
 	for _, item := range m.books {
+
 		if query != "" {
-			if !strings.Contains(
-				strings.ToLower(item.Title),
-				strings.ToLower(query),
-			) {
+
+			authorMatch := strings.Contains(
+				strings.ToLower(item.Author),
+				q,
+			)
+
+			if !authorMatch {
 				continue
 			}
 		}
