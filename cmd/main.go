@@ -64,8 +64,14 @@ func main() {
 
 	}
 
+	port := os.Getenv("PORT")
+
+	if port == "" {
+		port = "8080"
+	}
+
 	server := &http.Server{
-		Addr:    ":8080",
+		Addr:    ":" + port,
 		Handler: r,
 
 		ReadTimeout:  10 * time.Second,
@@ -74,7 +80,7 @@ func main() {
 	}
 
 	go func() {
-		log.Println("http server running at :8080")
+		log.Println("http server running at :" + port)
 
 		err := server.ListenAndServe()
 
