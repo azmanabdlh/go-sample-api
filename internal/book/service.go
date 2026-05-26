@@ -52,9 +52,9 @@ func (s *Service) Update(
 		return nil, err
 	}
 
-	if book == nil {
-		return nil, fmt.Errorf("error: %w", ErrBookNotFound)
-	}
+	// if book == nil {
+	// 	return nil, fmt.Errorf("error: %w", ErrBookNotFound)
+	// }
 
 	book.Title = title
 	book.Author = author
