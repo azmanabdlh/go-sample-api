@@ -38,15 +38,15 @@ type TokenRequest struct {
 type CreateBookRequest struct {
 	Title  string `json:"title"`
 	Author string `json:"author"`
+	Year   int    `json:"year"`
 }
 
 func (h *Handler) Create(c *gin.Context) {
 	var req CreateBookRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		RespondJSON(c, Response{
-			Message: err.Error(),
-			Code:    500,
+		c.JSON(500, gin.H{
+			"message": err.Error(),
 		})
 
 		return
@@ -56,21 +56,19 @@ func (h *Handler) Create(c *gin.Context) {
 		c.Request.Context(),
 		req.Title,
 		req.Author,
+		req.Year,
 	)
 
 	if err != nil {
-		RespondJSON(c, Response{
-			Message: err.Error(),
-			Code:    500,
+		c.JSON(500, gin.H{
+			"message": err.Error(),
 		})
 		return
 	}
 
-	RespondJSON(c, Response{
-		Success: true,
-		Message: "Book Created!!",
-		Code:    201,
-		Data:    book,
+	c.JSON(201, gin.H{
+		"message": "Book Created",
+		"book":    book,
 	})
 }
 
@@ -83,26 +81,22 @@ func (h *Handler) FindByID(c *gin.Context) {
 	)
 
 	if errors.Is(err, book.ErrBookNotFound) {
-		RespondJSON(c, Response{
-			Message: err.Error(),
-			Code:    404,
+		c.JSON(404, gin.H{
+			"message": err.Error(),
 		})
 		return
 	}
 
 	if err != nil {
-		RespondJSON(c, Response{
-			Message: err.Error(),
-			Code:    500,
+		c.JSON(500, gin.H{
+			"message": err.Error(),
 		})
 		return
 	}
 
-	RespondJSON(c, Response{
-		Success: true,
-		Message: "Book ok",
-		Code:    200,
-		Data:    data,
+	c.JSON(200, gin.H{
+		"message": "book ok",
+		"book":    data,
 	})
 }
 
@@ -112,9 +106,8 @@ func (h *Handler) Update(c *gin.Context) {
 	var req CreateBookRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		RespondJSON(c, Response{
-			Message: err.Error(),
-			Code:    500,
+		c.JSON(500, gin.H{
+			"message": err.Error(),
 		})
 		return
 	}
@@ -124,29 +117,26 @@ func (h *Handler) Update(c *gin.Context) {
 		id,
 		req.Title,
 		req.Author,
+		req.Year,
 	)
 
 	if errors.Is(err, book.ErrBookNotFound) {
-		RespondJSON(c, Response{
-			Message: err.Error(),
-			Code:    404,
+		c.JSON(404, gin.H{
+			"message": err.Error(),
 		})
 		return
 	}
 
 	if err != nil {
-		RespondJSON(c, Response{
-			Message: err.Error(),
-			Code:    500,
+		c.JSON(500, gin.H{
+			"message": err.Error(),
 		})
 		return
 	}
 
-	RespondJSON(c, Response{
-		Success: true,
-		Message: "Book Updated!",
-		Code:    200,
-		Data:    data,
+	c.JSON(200, gin.H{
+		"message": "Book Updated",
+		"book":    data,
 	})
 }
 
@@ -159,17 +149,15 @@ func (h *Handler) Delete(c *gin.Context) {
 	)
 
 	if err != nil {
-		RespondJSON(c, Response{
-			Message: err.Error(),
-			Code:    500,
+		c.JSON(500, gin.H{
+			"message": err.Error(),
 		})
+
 		return
 	}
 
-	RespondJSON(c, Response{
-		Success: true,
-		Message: "Book Deleted",
-		Code:    200,
+	c.JSON(200, gin.H{
+		"message": "Book Deleted",
 	})
 }
 
@@ -200,10 +188,10 @@ func (h *Handler) Search(c *gin.Context) {
 	)
 
 	if err != nil {
-		RespondJSON(c, Response{
-			Message: err.Error(),
-			Code:    500,
+		c.JSON(500, gin.H{
+			"message": err.Error(),
 		})
+
 		return
 	}
 
@@ -211,28 +199,25 @@ func (h *Handler) Search(c *gin.Context) {
 		books = []book.Book{}
 	}
 
-	RespondJSON(c, Response{
-		Success: true,
-		Message: "Successfully",
-		Code:    200,
-		Data: gin.H{
-			"books": books,
-			"meta": gin.H{
-				"page":  page,
-				"limit": limit,
-				"total": total,
-			},
+	c.JSON(200, gin.H{
+		"message": "success",
+		"books":   books,
+		"meta": gin.H{
+			"page":  page,
+			"limit": limit,
+			"total": total,
 		},
 	})
+
 }
 
 func (h *Handler) GenerateToken(c *gin.Context) {
 	var req TokenRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		RespondJSON(c, Response{
-			Message: "invalid body",
-			Code:    400,
+
+		c.JSON(400, gin.H{
+			"message": "invalid body",
 		})
 		return
 	}
@@ -246,22 +231,19 @@ func (h *Handler) GenerateToken(c *gin.Context) {
 	)
 
 	if err != nil {
-		RespondJSON(c, Response{
-			Message: "failed generate token",
-			Code:    500,
+
+		c.JSON(500, gin.H{
+			"message": "failed generate token",
 		})
 
 		return
 	}
 
-	RespondJSON(c, Response{
-		Success: true,
-		Message: "Token ok",
-		Data: gin.H{
-			"access_token": token,
-			"token_type":   "Bearer",
-			"user_id":      req.UserID,
-		},
-		Code: 200,
+	c.JSON(200, gin.H{
+		"message":      "success",
+		"access_token": token,
+		"token_type":   "Bearer",
+		"user_id":      req.UserID,
 	})
+
 }

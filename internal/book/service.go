@@ -21,11 +21,13 @@ func (s *Service) Create(
 	ctx context.Context,
 	title string,
 	author string,
+	year int,
 ) (*Book, error) {
 	book := Book{
 		ID:     uuid.NewString(),
 		Title:  title,
 		Author: author,
+		Year:   year,
 	}
 
 	err := s.repo.Create(ctx, book)
@@ -42,6 +44,7 @@ func (s *Service) Update(
 	id string,
 	title string,
 	author string,
+	year int,
 ) (*Book, error) {
 	book, err := s.repo.FindByID(ctx, id)
 
@@ -55,6 +58,7 @@ func (s *Service) Update(
 
 	book.Title = title
 	book.Author = author
+	book.Year = year
 
 	err = s.repo.Update(ctx, *book)
 

@@ -19,10 +19,10 @@ func RequiredAuthentication(adapter provider.Adapter) gin.HandlerFunc {
 		)
 
 		if token == "" {
-			RespondJSON(ctx, Response{
-				Code:    401,
-				Message: "Required Auth Token",
+			ctx.JSON(401, gin.H{
+				"message": "Required Auth Token",
 			})
+
 			ctx.Abort()
 			return
 		}
@@ -31,9 +31,8 @@ func RequiredAuthentication(adapter provider.Adapter) gin.HandlerFunc {
 			ctx.Request.Context(),
 			token,
 		); err != nil {
-			RespondJSON(ctx, Response{
-				Code:    401,
-				Message: err.Error(),
+			ctx.JSON(401, gin.H{
+				"message": err.Error(),
 			})
 
 			ctx.Abort()

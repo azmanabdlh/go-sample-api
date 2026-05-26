@@ -24,10 +24,8 @@ func main() {
 	r.Use(gin.Logger())
 
 	r.GET("/ping", func(c *gin.Context) {
-		httpx.RespondJSON(c, httpx.Response{
-			Message: "Pong",
-			Success: true,
-			Code:    200,
+		c.JSON(200, gin.H{
+			"message": "Pong",
 		})
 	})
 
