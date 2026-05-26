@@ -177,7 +177,7 @@ func (h *Handler) Search(c *gin.Context) {
 		limit = 10
 	}
 
-	books, total, err := h.service.Search(
+	books, _, err := h.service.Search(
 		c.Request.Context(),
 		query,
 		limit,
