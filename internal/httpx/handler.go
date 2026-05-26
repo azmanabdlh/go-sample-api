@@ -117,12 +117,12 @@ func (h *Handler) Update(c *gin.Context) {
 		req.Year,
 	)
 
-	if errors.Is(err, book.ErrBookNotFound) {
-		c.JSON(404, gin.H{
-			"message": err.Error(),
-		})
-		return
-	}
+	// if errors.Is(err, book.ErrBookNotFound) {
+	// 	c.JSON(404, gin.H{
+	// 		"message": err.Error(),
+	// 	})
+	// 	return
+	// }
 
 	if err != nil {
 		c.JSON(500, gin.H{
@@ -131,10 +131,7 @@ func (h *Handler) Update(c *gin.Context) {
 		return
 	}
 
-	c.JSON(200, gin.H{
-		"message": "Book Updated",
-		"book":    data,
-	})
+	c.JSON(200, data)
 }
 
 func (h *Handler) Delete(c *gin.Context) {
