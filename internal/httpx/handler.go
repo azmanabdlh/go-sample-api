@@ -196,15 +196,7 @@ func (h *Handler) Search(c *gin.Context) {
 		books = []book.Book{}
 	}
 
-	c.JSON(200, gin.H{
-		"message": "success",
-		"books":   books,
-		"meta": gin.H{
-			"page":  page,
-			"limit": limit,
-			"total": total,
-		},
-	})
+	c.JSON(200, books)
 
 }
 
