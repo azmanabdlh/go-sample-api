@@ -68,7 +68,7 @@ func (h *Handler) Create(c *gin.Context) {
 
 	c.JSON(201, gin.H{
 		"message": "Book Created",
-		"book":    book,
+		"id":      book.ID,
 	})
 }
 
