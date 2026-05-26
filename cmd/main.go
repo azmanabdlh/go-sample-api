@@ -49,7 +49,9 @@ func main() {
 
 	r.POST("/auth/token", handler.GenerateToken)
 	r.POST("/books", handler.Create)
-	r.GET("/books", handler.Search)
+	r.GET("/books/:id", handler.FindByID)
+	r.PUT("/books/:id", handler.Update)
+	r.DELETE("/books/:id", handler.Delete)
 
 	r.Use(
 		httpx.RequiredAuthentication(
@@ -59,9 +61,7 @@ func main() {
 		),
 	)
 	{
-		r.GET("/books/:id", handler.FindByID)
-		r.PUT("/books/:id", handler.Update)
-		r.DELETE("/books/:id", handler.Delete)
+		r.GET("/books", handler.Search)
 
 	}
 
