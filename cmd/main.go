@@ -49,8 +49,7 @@ func main() {
 
 	r.POST("/auth/token", handler.GenerateToken)
 
-	api := r.Group("/api")
-	api.Use(
+	r.Use(
 		httpx.RequiredAuthentication(
 			provider.NewMemoryTokenProvider(),
 			// or json-web-token provider
@@ -58,11 +57,11 @@ func main() {
 		),
 	)
 	{
-		api.POST("/books", handler.Create)
-		api.GET("/books", handler.Search)
-		api.GET("/books/:id", handler.FindByID)
-		api.PUT("/books/:id", handler.Update)
-		api.DELETE("/books/:id", handler.Delete)
+		r.POST("/books", handler.Create)
+		r.GET("/books", handler.Search)
+		r.GET("/books/:id", handler.FindByID)
+		r.PUT("/books/:id", handler.Update)
+		r.DELETE("/books/:id", handler.Delete)
 
 	}
 
