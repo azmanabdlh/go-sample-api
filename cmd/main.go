@@ -52,6 +52,7 @@ func main() {
 	r.GET("/books/:id", handler.FindByID)
 	r.PUT("/books/:id", handler.Update)
 	r.DELETE("/books/:id", handler.Delete)
+	r.GET("/books", handler.Search)
 
 	r.Use(
 		httpx.RequiredAuthentication(
@@ -61,7 +62,7 @@ func main() {
 		),
 	)
 	{
-		r.GET("/books", handler.Search)
+		// r.GET("/books", handler.Search)
 
 	}
 
