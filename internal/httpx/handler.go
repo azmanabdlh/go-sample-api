@@ -94,10 +94,7 @@ func (h *Handler) FindByID(c *gin.Context) {
 		return
 	}
 
-	c.JSON(200, gin.H{
-		"message": "book ok",
-		"book":    data,
-	})
+	c.JSON(200, data)
 }
 
 func (h *Handler) Update(c *gin.Context) {
